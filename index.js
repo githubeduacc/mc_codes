@@ -138,7 +138,7 @@ const generateAndCheckCode = async (qty) => {
 			if (isValid) {
 				fs.appendFileSync(qty + "off.txt", code + "\n");
 
-				if (qty === 70 || qty === 50) {
+				if (qty === 70) {
 					console.log(
 						`${qtyColors[qty]} VALID ${qty}% OFF CODE: ${code}!!! ${qtyColors[qty]}`
 					);
@@ -285,9 +285,11 @@ const checkExistingCodes = async () => {
 	console.log("=======================================\n");
 };
 
-(async () => {
-	await checkExistingCodes();
-})();
+setInterval(() => {
+	(async () => {
+		await checkExistingCodes();
+	})();
+}, 60000);
 
 setInterval(() => {
 	qtys.forEach((qty) => {
