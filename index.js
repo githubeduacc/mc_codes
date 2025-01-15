@@ -251,13 +251,15 @@ const checkExistingCodes = async () => {
 					);
 				}
 
-				await sendEmail({
-					code: "",
-					qty: qty,
-					type: "checkedCodes",
-					validCodes: validCodesForQty,
-					invalidCodes: invalidCodesForQty,
-				});
+				emailsEnabled &&
+					invalidCodesForQty.length > 0 &&
+					(await sendEmail({
+						code: "",
+						qty: qty,
+						type: "checkedCodes",
+						validCodes: validCodesForQty,
+						invalidCodes: invalidCodesForQty,
+					}));
 			} catch (error) {
 				console.log(error);
 			}
