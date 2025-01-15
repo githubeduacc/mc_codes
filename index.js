@@ -277,13 +277,19 @@ const checkExistingCodes = async () => {
 	console.log("=======================================\n");
 };
 
+let checkingCodes = false;
+
 setInterval(() => {
 	(async () => {
+		if (checkingCodes) return;
+		checkingCodes = true;
 		await checkExistingCodes();
+		checkingCodes = false;
 	})();
 }, 300000);
 
 setInterval(() => {
+	if (checkingCodes) return;
 	qtys.forEach((qty) => {
 		generateAndCheckCode(qty);
 	});
