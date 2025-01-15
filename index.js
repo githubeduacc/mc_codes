@@ -66,7 +66,7 @@ const sendEmail = async ({ code, qty, type, validCodes, invalidCodes }) => {
 			${validCodes.map((code) => `<li>${code}</li>`).join("")}
 			${validCodes.length > 0 ? "</ul>" : ""}
 			</br>
-			<h4>Códigos inválidos ${invalidCodes.length}:</h4>
+			<h4>Códigos inválidos (${invalidCodes.length}):</h4>
 			${
 				invalidCodes.length > 0
 					? "<ul>"
