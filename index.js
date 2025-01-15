@@ -169,6 +169,7 @@ const checkExistingCodes = async () => {
 	let validCodes = [];
 	let invalidCodes = [];
 	let totalCodesChecked = 0;
+	console.log("\n=== Verificando de códigos existentes... ===");
 
 	await Promise.all(
 		qtys.map(async (qty) => {
@@ -215,15 +216,6 @@ const checkExistingCodes = async () => {
 							if (isValid) {
 								validCodesForQty.push(codeValue);
 								validCodes.push(codeValue);
-								if (qty === 70 || qty === 50) {
-									console.log(
-										`${qtyColors[qty]} ${qty}% OFF CODE: ${codeValue} IS STILL ENABLED!!! ${qtyColors[qty]}`
-									);
-								} else {
-									console.log(
-										`${qtyColors[qty]} ${qty}% off code: ${codeValue} is still enabled ${qtyColors[qty]}`
-									);
-								}
 							} else {
 								invalidCodesForQty.push(codeValue);
 								invalidCodes.push(codeValue);
