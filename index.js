@@ -169,7 +169,7 @@ const checkExistingCodes = async () => {
 	let validCodes = [];
 	let invalidCodes = [];
 	let totalCodesChecked = 0;
-	console.log("\n=== Verificando de códigos existentes... ===");
+	console.log("\nVerificando de códigos existentes...");
 
 	await Promise.all(
 		qtys.map(async (qty) => {
@@ -281,7 +281,7 @@ setInterval(() => {
 	(async () => {
 		await checkExistingCodes();
 	})();
-}, 60000);
+}, 300000);
 
 setInterval(() => {
 	qtys.forEach((qty) => {
