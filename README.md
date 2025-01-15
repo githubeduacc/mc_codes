@@ -1,6 +1,6 @@
 # Generador de códigos de descuento para Mc Donald's
 
-Generá códigos de 20%, 30%, 40%, 50%, 60% y 70% de descuento para utilizar desde la app de Mc Donald's de lunes a jueves hasta el 25 de enero del 2025. TyC: https://www.mcdonalds.com.ar/bases-y-condicones-promocion-ruletapp.
+Generá códigos de 20%, 30%, 50% y 70% de descuento para utilizar desde la app de Mc Donald's de lunes a jueves hasta el 25 de enero del 2025. TyC: https://www.mcdonalds.com.ar/bases-y-condicones-promocion-ruletapp.
 
 Requisitos previos:
 
@@ -33,3 +33,7 @@ En caso de querer inicializarlo en modo de desarrollo para depurar posibles erro
 ```bash
   npm run dev
 ```
+
+## Disclaimer
+
+Este proyecto no está afiliado, respaldado ni patrocinado por Mc Donald´s. Todos los derechos asociados a la marca y su uso están reservados a su propietario legítimo. El uso de la marca en este sitio es únicamente informativo y exclusivamente con propósitos educativos. No nos hacemos responsable de cualquier uso indebido que pueda hacerse del proyecto.

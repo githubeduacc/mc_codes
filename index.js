@@ -11,7 +11,7 @@ const senderAddress = process.env.SENDER_ADDRESS;
 const receiverAddress = process.env.RECEIVER_ADDRESS;
 const emailsEnabled = Boolean(process.env.EMAILS_ENABLED);
 
-const qtys = [70, 60, 50, 40, 30, 20];
+const qtys = [70, 50, 30, 20];
 const logColors = {
 	red: "\x1b[31m",
 	green: "\x1b[32m",
@@ -22,10 +22,8 @@ const logColors = {
 };
 const qtyColors = {
 	70: logColors.magenta,
-	60: logColors.blue,
 	50: logColors.cyan,
-	40: logColors.yellow,
-	30: logColors.green,
+	30: logColors.yellow,
 	20: logColors.green,
 };
 
@@ -123,7 +121,7 @@ const generateAndCheckCode = async (qty) => {
 					code + " ENABLED: " + isEnabled + "\n"
 				);
 
-				if (qty === 70 || qty === 60 || qty === 50 || qty === 40) {
+				if (qty === 70 || qty === 50) {
 					console.log(
 						`${qtyColors[qty]} VALID ${qty}% OFF CODE: ${code} ENABLED: ${isEnabled}!!! ${qtyColors[qty]}`
 					);
