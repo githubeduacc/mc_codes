@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const nodemailer = require("nodemailer");
 const axios = require("axios");
+const { createClient } = require("@supabase/supabase-js");
 
 const emailUser = process.env.EMAIL_USER;
 const emailPassword = process.env.EMAIL_PASSWORD;
@@ -9,37 +10,64 @@ const emailHost = process.env.EMAIL_HOST;
 const emailPort = process.env.EMAIL_PORT;
 const senderAddress = process.env.SENDER_ADDRESS;
 const receiverAddress = process.env.RECEIVER_ADDRESS;
-const emailsEnabled = Boolean(process.env.EMAILS_ENABLED);
+const emailsEnabled = process.env.EMAILS_ENABLED === "true";
+const seventyOffGenEnabled = process.env.SEVENTY_GEN_ENABLED === "true";
+const seventyOffCheckEnabled = process.env.SEVENTY_CHECK_ENABLED === "true";
+const seventyOffGenNotifications =
+	process.env.SEVENTY_GEN_NOTIFICATIONS === "true";
+const seventyOffCheckNotifications =
+	process.env.SEVENTY_CHECK_NOTIFICATIONS === "true";
+const fiftyOffGenEnabled = process.env.FIFTY_GEN_ENABLED === "true";
+const fiftyOffCheckEnabled = process.env.FIFTY_CHECK_ENABLED === "true";
+const fiftyOffGenNotifications = process.env.FIFTY_GEN_NOTIFICATIONS === "true";
+const fiftyOffCheckNotifications =
+	process.env.FIFTY_CHECK_NOTIFICATIONS === "true";
+const thirtyOffGenEnabled = process.env.THIRTY_GEN_ENABLED === "true";
+const thirtyOffCheckEnabled = process.env.THIRTY_CHECK_ENABLED === "true";
+const thirtyOffGenNotifications =
+	process.env.THIRTY_GEN_NOTIFICATIONS === "true";
+const thirtyOffCheckNotifications =
+	process.env.THIRTY_CHECK_NOTIFICATIONS === "true";
+const twentyOffGenEnabled = process.env.TWENTY_GEN_ENABLED === "true";
+const twentyOffCheckEnabled = process.env.TWENTY_CHECK_ENABLED === "true";
+const twentyOffGenNotifications =
+	process.env.TWENTY_GEN_NOTIFICATIONS === "true";
+const twentyOffCheckNotifications =
+	process.env.TWENTY_CHECK_NOTIFICATIONS === "true";
+const dbMode = process.env.DB_MODE === "true";
+const dbUrl = process.env.DB_URL;
+const dbApiKey = process.env.DB_API_KEY;
 
-// Edit quantities settings here (percent: percentage off, gen_enabled: enable code generation, check_enabled: enable code checking, gen_notifications: enable generation notifications, check_notifications: enable checking notifications)
+const supabase = dbMode ? createClient(dbUrl, dbApiKey) : null;
+
 const qtys = [
 	{
 		percent: 70,
-		gen_enabled: true,
-		check_enabled: true,
-		gen_notifications: true,
-		check_notifications: true,
+		gen_enabled: seventyOffGenEnabled,
+		check_enabled: seventyOffCheckEnabled,
+		gen_notifications: seventyOffGenNotifications,
+		check_notifications: seventyOffCheckNotifications,
 	},
 	{
 		percent: 50,
-		gen_enabled: true,
-		check_enabled: true,
-		gen_notifications: false,
-		check_notifications: true,
+		gen_enabled: fiftyOffGenEnabled,
+		check_enabled: fiftyOffCheckEnabled,
+		gen_notifications: fiftyOffGenNotifications,
+		check_notifications: fiftyOffCheckNotifications,
 	},
 	{
 		percent: 30,
-		gen_enabled: false,
-		check_enabled: false,
-		gen_notifications: false,
-		check_notifications: false,
+		gen_enabled: thirtyOffGenEnabled,
+		check_enabled: thirtyOffCheckEnabled,
+		gen_notifications: thirtyOffGenNotifications,
+		check_notifications: thirtyOffCheckNotifications,
 	},
 	{
 		percent: 20,
-		gen_enabled: false,
-		check_enabled: false,
-		gen_notifications: false,
-		check_notifications: false,
+		gen_enabled: twentyOffGenEnabled,
+		check_enabled: twentyOffCheckEnabled,
+		gen_notifications: twentyOffGenNotifications,
+		check_notifications: twentyOffCheckNotifications,
 	},
 ];
 
@@ -168,17 +196,16 @@ const generateAndCheckCode = async (qty) => {
 			const isValid = data.valid;
 
 			if (isValid) {
+				// check if duplicate
+				const data = await fs.promises.readFile(qty + "off.txt", "utf8");
+				const codes = data.split(/\r?\n/).filter((code) => code.trim());
+				if (codes.includes(code)) {
+					console.log(
+						`${logColors.red} Duplicate ${qty}% off code: ${code} ${logColors.red}`
+					);
+					return;
+				}
 				fs.appendFileSync(qty + "off.txt", code + "\n");
-
-				emailsEnabled &&
-					qtys.find((q) => q.percent === qty).gen_notifications &&
-					(await sendEmail({
-						code: code,
-						qty: qty,
-						type: "codeFound",
-						validCodes: [],
-						invalidCodes: [],
-					}));
 
 				if (qty === 70) {
 					console.log(
@@ -189,6 +216,32 @@ const generateAndCheckCode = async (qty) => {
 						`${qtyColors[qty]} Valid ${qty}% off code: ${code} ${qtyColors[qty]}`
 					);
 				}
+
+				if (dbMode) {
+					const { error } = await supabase
+						.from("codes")
+						.insert([{ code: code, qty: qty }]);
+
+					if (error) {
+						console.log(
+							`${logColors.red} Error inserting code ${code} into database: ${error.message} ${logColors.red}`
+						);
+					} else {
+						console.log(
+							`${logColors.green} Code ${code} inserted into database ${logColors.green}`
+						);
+					}
+				}
+
+				emailsEnabled &&
+					qtys.find((q) => q.percent === qty).gen_notifications &&
+					(await sendEmail({
+						code: code,
+						qty: qty,
+						type: "codeFound",
+						validCodes: [],
+						invalidCodes: [],
+					}));
 			}
 		} catch (error) {
 			console.log(
@@ -289,6 +342,26 @@ const checkExistingCodes = async () => {
 								.map((code) => `${qty}% OFF CODE: ${code}`)
 								.join("\n") + "\n"
 						);
+						if (dbMode) {
+							const { error } = await supabase.from("codes").upsert(
+								invalidCodesForQty.map((code) => ({
+									code: code,
+									qty: qty,
+									is_used: true,
+								})),
+								{ onConflict: ["code"] }
+							);
+
+							if (error) {
+								console.log(
+									`${logColors.red} Error updating codes in database: ${error.message} ${logColors.red}`
+								);
+							} else {
+								console.log(
+									`${logColors.green} Codes updated in database ${logColors.green}`
+								);
+							}
+						}
 					}
 
 					emailsEnabled &&
@@ -316,14 +389,14 @@ const checkExistingCodes = async () => {
 		`${logColors.cyan}Total de códigos verificados: ${totalCodesChecked}${logColors.cyan}`
 	);
 	console.log(
-		`${logColors.green}Códigos válidos: ${validCodes.length}${logColors.green}`
+		`${logColors.green}Total de códigos válidos: ${validCodes.length}${logColors.green}`
 	);
 	console.log(
-		`${logColors.red}Códigos inválidos: ${invalidCodes.length}${logColors.red}`
+		`${logColors.red}Total de códigos inválidos: ${invalidCodes.length}${logColors.red}`
 	);
 	invalidCodes.length > 0 &&
 		console.log(
-			`${logColors.red}Códigos inválidos: ${invalidCodes.join(", ")}${
+			`${logColors.red}Lista de códigos inválidos: ${invalidCodes.join(", ")}${
 				logColors.red
 			}`
 		);

@@ -12,6 +12,7 @@
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
+		"@supabase/supabase-js": "^2.47.14",
 		"axios": "^1.7.9",
 		"express": "^4.21.2",
 		"fs": "^0.0.1-security",
