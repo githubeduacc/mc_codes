@@ -426,7 +426,7 @@ setInterval(() => {
 		await checkExistingCodes();
 		checkingCodes = false;
 	})();
-}, 100);
+}, 300000);
 
 setInterval(() => {
 	if (checkingCodes) return;
