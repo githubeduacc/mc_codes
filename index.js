@@ -114,7 +114,7 @@ const sendEmail = async ({ code, qty, type, validCodes, invalidCodes }) => {
 
 	try {
 		await transporter.sendMail({
-			from: `Códigos Mc Donald's <${senderAddress}>`,
+			from: `Códigos McDonald's <${senderAddress}>`,
 			to: receiverAddress,
 			subject: variables[type].subject,
 			text: variables[type].text,
