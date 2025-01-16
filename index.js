@@ -200,15 +200,19 @@ const generateAndCheckCode = async (qty) => {
 
 			if (isValid) {
 				// check if duplicate
-				const data = await fs.promises.readFile(qty + "off.txt", "utf8");
-				const codes = data.split(/\r?\n/).filter((code) => code.trim());
-				if (codes.includes(code)) {
+				const data = dbMode
+					? null
+					: await fs.promises.readFile(qty + "off.txt", "utf8");
+				const codes = dbMode
+					? null
+					: data.split(/\r?\n/).filter((code) => code.trim());
+				if (codes && codes.includes(code)) {
 					console.log(
 						`${logColors.red} Duplicate ${qty}% off code: ${code} ${logColors.red}`
 					);
 					return;
 				}
-				fs.appendFileSync(qty + "off.txt", code + "\n");
+				!dbMode && fs.appendFileSync(qty + "off.txt", code + "\n");
 
 				if (qty === 70) {
 					console.log(
@@ -276,7 +280,9 @@ const checkExistingCodes = async () => {
 			.filter((qty) => qty.check_enabled)
 			.map(async ({ percent: qty }) => {
 				try {
-					const data = await fs.promises.readFile(qty + "off.txt", "utf8");
+					const data = dbMode
+						? null
+						: await fs.promises.readFile(qty + "off.txt", "utf8");
 					const codes = dbMode
 						? await supabase
 								.from("codes")
@@ -342,16 +348,18 @@ const checkExistingCodes = async () => {
 					);
 
 					if (invalidCodesForQty.length > 0) {
-						await fs.promises.writeFile(
-							qty + "off.txt",
-							validCodesForQty.join("\n") + "\n"
-						);
-						await fs.promises.appendFile(
-							"already_used.txt",
-							invalidCodesForQty
-								.map((code) => `${qty}% OFF CODE: ${code}`)
-								.join("\n") + "\n"
-						);
+						!dbMode &&
+							(await fs.promises.writeFile(
+								qty + "off.txt",
+								validCodesForQty.join("\n") + "\n"
+							));
+						!dbMode &&
+							(await fs.promises.appendFile(
+								"already_used.txt",
+								invalidCodesForQty
+									.map((code) => `${qty}% OFF CODE: ${code}`)
+									.join("\n") + "\n"
+							));
 						if (dbMode) {
 							const { error } = await supabase.from("codes").upsert(
 								invalidCodesForQty.map((code) => ({
@@ -426,7 +434,7 @@ setInterval(() => {
 		await checkExistingCodes();
 		checkingCodes = false;
 	})();
-}, 300000);
+}, 500);
 
 setInterval(() => {
 	if (checkingCodes) return;
