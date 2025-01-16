@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 const axios = require("axios");
 const { createClient } = require("@supabase/supabase-js");
 
+const PORT = process.env.PORT || 3000;
 const emailUser = process.env.EMAIL_USER;
 const emailPassword = process.env.EMAIL_PASSWORD;
 const emailHost = process.env.EMAIL_HOST;
@@ -427,9 +428,9 @@ setInterval(() => {
 		});
 }, 100);
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
 	console.log(
-		logColors.white + "Server is running on port 3000" + logColors.white
+		logColors.white + "Server is running on port " + PORT + logColors.white
 	);
 	console.log(
 		logColors.blue +
