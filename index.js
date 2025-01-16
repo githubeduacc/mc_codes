@@ -19,6 +19,7 @@ const logColors = {
 	blue: "\x1b[34m",
 	magenta: "\x1b[35m",
 	cyan: "\x1b[36m",
+	white: "\x1b[37m",
 };
 const qtyColors = {
 	70: logColors.magenta,
@@ -89,7 +90,7 @@ const sendEmail = async ({ code, qty, type, validCodes, invalidCodes }) => {
 			html: variables[type].html,
 		});
 	} catch (error) {
-		console.log(error);
+		console.log(logColors.red + error + logColors.red);
 	}
 };
 
@@ -158,10 +159,12 @@ const generateAndCheckCode = async (qty) => {
 				}
 			}
 		} catch (error) {
-			console.log(error);
+			console.log(
+				`${logColors.yellow} Error checking ${qty}% off code: ${code} - ${error.code} ${logColors.yellow}`
+			);
 		}
 	} catch (error) {
-		console.log(error);
+		console.log(logColors.red + error + logColors.red);
 	}
 };
 
@@ -169,7 +172,9 @@ const checkExistingCodes = async () => {
 	let validCodes = [];
 	let invalidCodes = [];
 	let totalCodesChecked = 0;
-	console.log("\nVerificando de códigos existentes...");
+	console.log(
+		logColors.white + "\nVerificando de códigos existentes..." + logColors.white
+	);
 
 	await Promise.all(
 		qtys.map(async (qty) => {
@@ -225,7 +230,9 @@ const checkExistingCodes = async () => {
 							}
 							totalCodesChecked++;
 						} catch (error) {
-							console.log(error);
+							console.log(
+								`${logColors.yellow} Error checking ${qty}% off code: ${codeValue} - ${error.code} ${logColors.yellow}`
+							);
 						}
 					})
 				);
@@ -253,14 +260,18 @@ const checkExistingCodes = async () => {
 						invalidCodes: invalidCodesForQty,
 					}));
 			} catch (error) {
-				console.log(error);
+				console.log(logColors.red + error + logColors.red);
 			}
 		})
 	);
 
-	console.log("\n=== Resumen de verificación de códigos ===");
 	console.log(
-		`${logColors.yellow}Total de códigos verificados: ${totalCodesChecked}${logColors.yellow}`
+		logColors.white +
+			"\n=== Resumen de verificación de códigos ===" +
+			logColors.white
+	);
+	console.log(
+		`${logColors.cyan}Total de códigos verificados: ${totalCodesChecked}${logColors.cyan}`
 	);
 	console.log(
 		`${logColors.green}Códigos válidos: ${validCodes.length}${logColors.green}`
@@ -274,7 +285,11 @@ const checkExistingCodes = async () => {
 				logColors.red
 			}`
 		);
-	console.log("=======================================\n");
+	console.log(
+		logColors.white +
+			"=======================================\n" +
+			logColors.white
+	);
 };
 
 let checkingCodes = false;
@@ -296,5 +311,7 @@ setInterval(() => {
 }, 100);
 
 app.listen(3000, () => {
-	console.log("Server is running on port 3000");
+	console.log(
+		logColors.white + "Server is running on port 3000" + logColors.white
+	);
 });
