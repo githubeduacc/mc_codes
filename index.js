@@ -463,6 +463,8 @@ app.listen(PORT, () => {
 				.filter((qty) => qty.check_notifications)
 				.map((qty) => qty.percent + "%")
 				.join(", ") +
+			"\nDATABASE MODE: " +
+			dbMode +
 			logColors.blue
 	);
 });
