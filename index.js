@@ -275,7 +275,14 @@ const checkExistingCodes = async () => {
 			.map(async ({ percent: qty }) => {
 				try {
 					const data = await fs.promises.readFile(qty + "off.txt", "utf8");
-					const codes = data.split(/\r?\n/).filter((code) => code.trim());
+					const codes = dbMode
+						? await supabase
+								.from("codes")
+								.select("code")
+								.eq("qty", qty)
+								.eq("is_used", false)
+								.then((data) => data.data.map((code) => code.code))
+						: data.split(/\r?\n/).filter((code) => code.trim());
 					const invalidCodesForQty = [];
 					const validCodesForQty = [];
 
