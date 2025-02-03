@@ -92,16 +92,15 @@ const qtyColors = {
 
 const app = express();
 
+let transporter = nodemailer.createTransport({
+	host: emailHost,
+	port: emailPort,
+	auth: {
+		user: emailUser,
+		pass: emailPassword,
+	},
+});
 const sendEmail = async ({ code, qty, type, validCodes, invalidCodes }) => {
-	let transporter = nodemailer.createTransport({
-		host: emailHost,
-		port: emailPort,
-		auth: {
-			user: emailUser,
-			pass: emailPassword,
-		},
-	});
-
 	const variables = {
 		codeFound: {
 			subject: `¡Nuevo código de ${qty}% de descuento para McDonald's!`,
@@ -157,15 +156,6 @@ const sendEmail = async ({ code, qty, type, validCodes, invalidCodes }) => {
 };
 
 const sendExpiredOrderEmail = async ({ email, order_id }) => {
-	let transporter = nodemailer.createTransport({
-		host: emailHost,
-		port: emailPort,
-		auth: {
-			user: emailUser,
-			pass: emailPassword,
-		},
-	});
-
 	try {
 		await transporter.sendMail({
 			from: `Dantutu Store <${senderAddress}>`,
