@@ -156,6 +156,36 @@ const sendEmail = async ({ code, qty, type, validCodes, invalidCodes }) => {
 	}
 };
 
+const sendExpiredOrderEmail = async ({ email, order_id }) => {
+	let transporter = nodemailer.createTransport({
+		host: emailHost,
+		port: emailPort,
+		auth: {
+			user: emailUser,
+			pass: emailPassword,
+		},
+	});
+
+	try {
+		await transporter.sendMail({
+			from: `Dantutu Store <${senderAddress}>`,
+			to: email,
+			subject: `¡Tu orden en Dantutu Store ha expirado! - Orden ${order_id}`, // Subject line
+			text: `Tu orden en Dantutu Store ha expirado`,
+			html: `
+                <h3>Tu orden ${order_id} en Dantutu Store ha expirado.</h3>
+            </br>
+            <p>Si deseas realizar una nueva compra, por favor, visita nuestra tienda. En caso de que hayas realizado el pago y no hayas subido el comprobante, por favor, escribime a @dantutu_ en Twitter.</p>
+            </p>
+            </br>
+            <p>Email enviado automaticamente, no responder.</p>
+            `,
+		});
+	} catch (error) {
+		console.log(logColors.red + error + logColors.red);
+	}
+};
+
 const generateCode = (qty) => {
 	// format: QTYOFFXXXXX (QTY is two digit (20-30-40-50-60-70), X is a random character from A-Z or number from 0-9)
 	const code =
@@ -427,6 +457,70 @@ const checkExistingCodes = async () => {
 
 let checkingCodes = false;
 
+const checkExpiredOrders = async () => {
+	// check for expired orders in table orders
+	const { data: orders, error } = await supabase.from("orders").select("*");
+
+	if (error) {
+		console.log(
+			`${logColors.red} Error fetching orders: ${error.message} ${logColors.red}`
+		);
+		return;
+	}
+
+	const expiredOrders = orders.filter(
+		(order) =>
+			new Date(order.expires_at) - new Date() < 0 &&
+			order.payment_status === "pending"
+	);
+
+	if (expiredOrders.length > 0) {
+		console.log(
+			`${logColors.red} Found ${expiredOrders.length} expired orders ${logColors.red}`
+		);
+	}
+
+	expiredOrders.forEach(async (order) => {
+		// release codes
+		const { error: releaseError } = await supabase
+			.from("codes")
+			.update({
+				is_reserved: false,
+				reserved_until: null,
+			})
+			.in("code", order.product_keys);
+
+		if (releaseError) {
+			console.log(
+				`${logColors.red} Error releasing codes for order ${order.id}: ${releaseError.message} ${logColors.red}`
+			);
+		} else {
+			console.log(
+				`${logColors.green} Codes released for order ${order.id} ${logColors.green}`
+			);
+		}
+
+		const { error } = await supabase
+			.from("orders")
+			.update({ payment_status: "expired" })
+			.eq("id", order.id);
+
+		if (error) {
+			console.log(
+				`${logColors.red} Error updating order ${order.id}: ${error.message} ${logColors.red}`
+			);
+		} else {
+			sendExpiredOrderEmail({
+				email: order.email,
+				order_id: order.id,
+			});
+			console.log(
+				`${logColors.green} Order ${order.id} updated to expired ${logColors.green}`
+			);
+		}
+	});
+};
+
 setInterval(() => {
 	(async () => {
 		if (checkingCodes) return;
@@ -444,6 +538,13 @@ setInterval(() => {
 			generateAndCheckCode(qty.percent);
 		});
 }, 100);
+
+// check for expired orders every 1 minute
+setInterval(() => {
+	(async () => {
+		await checkExpiredOrders();
+	})();
+}, 60000);
 
 app.listen(PORT, () => {
 	console.log(
