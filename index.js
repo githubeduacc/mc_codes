@@ -176,17 +176,123 @@ const sendExpiredOrderEmail = async ({ email, order_id }) => {
 	}
 };
 
-const generateCode = (qty) => {
-	// format: QTYOFFXXXXX (QTY is two digit (20-30-40-50-60-70), X is a random character from A-Z or number from 0-9)
+const generateCodeA = (qty) => {
+	// format: QTYOFFAXXXXX (QTY is two digit (20-30-40-50-60-70), X is a random character from A-Z or number from 0-9)
 	const code =
-		qty.toString() +
 		"OFF" +
+		qty.toString() +
+		"A" +
 		Math.random().toString(36).substring(2, 7).toUpperCase();
 	return code;
 };
 
-const generateAndCheckCode = async (qty) => {
-	const code = generateCode(qty);
+const generateCodeB = (qty) => {
+	// format: QTYOFFBXXXXX (QTY is two digit (20-30-40-50-60-70), X is a random character from A-Z or number from 0-9)
+	const code =
+		"OFF" +
+		qty.toString() +
+		"B" +
+		Math.random().toString(36).substring(2, 7).toUpperCase();
+	return code;
+};
+
+const generateAndCheckCodeA = async (qty) => {
+	const code = generateCodeA(qty);
+
+	try {
+		const response = await axios.post(
+			"https://promos-mcd-ecommerce.appmcdonalds.com/api/promotions/check-code",
+			{
+				coupon: code,
+			},
+			{
+				headers: {
+					accept: "application/json, text/plain, */*",
+					"accept-language": "en-US,en;q=0.6",
+					"content-type": "application/json",
+					priority: "u=1, i",
+					"sec-ch-ua":
+						'"Brave";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+					"sec-ch-ua-mobile": "?0",
+					"sec-ch-ua-platform": '"Windows"',
+					"sec-fetch-dest": "empty",
+					"sec-fetch-mode": "cors",
+					"sec-fetch-site": "cross-site",
+					"sec-gpc": "1",
+					"x-app-country": "AR",
+					"x-app-version": "web-2.0.0",
+				},
+				referrerPolicy: "same-origin",
+			}
+		);
+		try {
+			const data = await response.data;
+			const isValid = data.valid;
+
+			if (isValid) {
+				// check if duplicate
+				const data = dbMode
+					? null
+					: await fs.promises.readFile(qty + "off.txt", "utf8");
+				const codes = dbMode
+					? null
+					: data.split(/\r?\n/).filter((code) => code.trim());
+				if (codes && codes.includes(code)) {
+					console.log(
+						`${logColors.red} Duplicate ${qty}% off code: ${code} ${logColors.red}`
+					);
+					return;
+				}
+				!dbMode && fs.appendFileSync(qty + "off.txt", code + "\n");
+
+				if (qty === 70) {
+					console.log(
+						`${qtyColors[qty]} VALID ${qty}% OFF CODE: ${code}!!! ${qtyColors[qty]}`
+					);
+				} else {
+					console.log(
+						`${qtyColors[qty]} Valid ${qty}% off code: ${code} ${qtyColors[qty]}`
+					);
+				}
+
+				if (dbMode) {
+					const { error } = await supabase
+						.from("codes")
+						.insert([{ code: code, qty: qty }]);
+
+					if (error) {
+						console.log(
+							`${logColors.red} Error inserting code ${code} into database: ${error.message} ${logColors.red}`
+						);
+					} else {
+						console.log(
+							`${logColors.green} Code ${code} inserted into database ${logColors.green}`
+						);
+					}
+				}
+
+				emailsEnabled &&
+					qtys.find((q) => q.percent === qty).gen_notifications &&
+					(await sendEmail({
+						code: code,
+						qty: qty,
+						type: "codeFound",
+						validCodes: [],
+						invalidCodes: [],
+					}));
+			}
+		} catch (error) {
+			console.log(
+				`${logColors.yellow} Error checking ${qty}% off code: ${code} - ${error.code} ${logColors.yellow}`
+			);
+		}
+	} catch (error) {
+		console.log(logColors.red + error + logColors.red);
+	}
+};
+
+const generateAndCheckCodeB = async (qty) => {
+	const code = generateCodeB(qty);
 
 	try {
 		const response = await axios.post(
@@ -511,6 +617,104 @@ const checkExpiredOrders = async () => {
 	});
 };
 
+// const checkArrayOfCodes = async () => {
+// 	const codes = [];
+
+// 	const validCodes = [];
+// 	const invalidCodes = [];
+
+// 	await Promise.all(
+// 		codes.map(async (code) => {
+// 			try {
+// 				const response = await axios.post(
+// 					"https://promos-mcd-ecommerce.appmcdonalds.com/api/promotions/check-code",
+// 					{ coupon: code },
+// 					{
+// 						headers: {
+// 							accept: "application/json, text/plain, */*",
+// 							"accept-language": "en-US,en;q=0.6",
+// 							"content-type": "application/json",
+// 							priority: "u=1, i",
+// 							"sec-ch-ua":
+// 								'"Brave";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+// 							"sec-ch-ua-mobile": "?0",
+// 							"sec-ch-ua-platform": '"Windows"',
+// 							"sec-fetch-dest": "empty",
+// 							"sec-fetch-mode": "cors",
+// 							"sec-fetch-site": "cross-site",
+// 							"sec-gpc": "1",
+// 							"x-app-country": "AR",
+// 							"x-app-version": "web-2.0.0",
+// 						},
+// 						referrerPolicy: "same-origin",
+// 					}
+// 				);
+
+// 				const data = response.data;
+// 				const isValid = data.valid;
+// 				const status = data.status;
+
+// 				if (isValid) {
+// 					validCodes.push(code);
+// 				} else {
+// 					invalidCodes.push(code);
+// 				}
+// 			} catch (error) {
+// 				console.log(
+// 					`${logColors.yellow} Error checking ${code} - ${error.code} ${logColors.yellow}`
+// 				);
+// 			}
+// 		})
+// 	);
+
+// 	console.log(
+// 		logColors.white +
+// 			"\n=== Resumen de verificación de códigos ===" +
+// 			logColors.white
+// 	);
+// 	console.log(
+// 		`${logColors.cyan}Total de códigos verificados: ${codes.length}${logColors.cyan}`
+// 	);
+// 	console.log(
+// 		`${logColors.green}Total de códigos válidos: ${validCodes.length}${logColors.green}`
+// 	);
+// 	console.log(
+// 		`${logColors.red}Total de códigos inválidos: ${invalidCodes.length}${logColors.red}`
+// 	);
+// 	validCodes.length > 0 &&
+// 		console.log(
+// 			`${logColors.green}Lista de códigos validos: ${validCodes.join(", ")}${
+// 				logColors.green
+// 			}`
+// 		);
+// 	console.log(
+// 		logColors.white +
+// 			"=======================================\n" +
+// 			logColors.white
+// 	);
+
+// 	// update valid codes in database set is_reserved to false
+// 	const { error } = await supabase
+// 		.from("codes")
+// 		.update({
+// 			is_reserved: false,
+// 			reserved_until: null,
+// 		})
+// 		.in("code", validCodes);
+
+// 	if (error) {
+// 		console.log(
+// 			`${logColors.red} Error updating valid codes in database: ${error.message} ${logColors.red}`
+// 		);
+// 	} else {
+// 		console.log(
+// 			`${logColors.green} Valid codes updated in database ${logColors.green}`
+// 		);
+// 	}
+// };
+
+// checkArrayOfCodes();
+
 setInterval(() => {
 	(async () => {
 		if (checkingCodes) return;
@@ -525,9 +729,10 @@ setInterval(() => {
 	qtys
 		.filter((qty) => qty.gen_enabled)
 		.forEach((qty) => {
-			generateAndCheckCode(qty.percent);
+			generateAndCheckCodeA(qty.percent);
+			generateAndCheckCodeB(qty.percent);
 		});
-}, 100);
+}, 50);
 
 // check for expired orders every 1 minute
 setInterval(() => {
