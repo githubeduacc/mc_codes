@@ -458,11 +458,17 @@ const checkExistingCodes = async () => {
 									validCodesForQty.push(codeValue);
 									validCodes.push(codeValue);
 								} else {
-									invalidCodesForQty.push(codeValue);
-									invalidCodes.push(codeValue);
-									console.log(
-										`${logColors.red} ${qty}% off code: ${codeValue} is not valid anymore. Status code: ${status} ${logColors.red}`
-									);
+									if (status === 801) {
+										invalidCodesForQty.push(codeValue);
+										invalidCodes.push(codeValue);
+										console.log(
+											`${logColors.red} ${qty}% off code: ${codeValue} is not valid anymore. Status code: ${status} ${logColors.red}`
+										);
+									} else {
+										console.log(
+											`${logColors.yellow} ${qty}% off code: ${codeValue} checked as invalid but not used. Status code: ${status} ${logColors.yellow}`
+										);
+									}
 								}
 								totalCodesChecked++;
 							} catch (error) {
