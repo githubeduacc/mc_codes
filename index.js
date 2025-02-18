@@ -1224,11 +1224,11 @@ setInterval(() => {
 }, 50);
 
 // check for expired orders every 1 minute
-// setInterval(() => {
-// 	(async () => {
-// 		await checkExpiredOrders();
-// 	})();
-// }, 60000);
+setInterval(() => {
+	(async () => {
+		await checkExpiredOrders();
+	})();
+}, 60000);
 
 app.listen(PORT, () => {
 	console.log(
