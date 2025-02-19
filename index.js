@@ -1011,7 +1011,7 @@ const checkExistingCodes = async () => {
 
 						try {
 							// Esperar 1 segundo antes de cada solicitud
-							await new Promise((resolve) => setTimeout(resolve, 500));
+							await new Promise((resolve) => setTimeout(resolve, 1000));
 
 							const response = await axios.post(
 								"https://promos-mcd-ecommerce.appmcdonalds.com/api/promotions/check-code",
@@ -1339,8 +1339,8 @@ setInterval(() => {
 		await checkExistingCodes();
 		checkingCodes = false;
 	})();
-	// half an hour
-}, 1800000);
+	// hour
+}, 3600000);
 
 setInterval(() => {
 	if (checkingCodes) return;
