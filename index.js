@@ -355,7 +355,8 @@ const generateAndCheckCodeA = async (qty) => {
 				if (dbMode) {
 					const { error } = await supabase
 						// .from("codes")
-						.from("codes_sv")
+						// .from("codes_sv")
+						.from("codes_latest")
 						.insert([{ code: code, qty: qty }]);
 
 					if (error) {
@@ -452,7 +453,8 @@ const generateAndCheckCodeB = async (qty) => {
 				if (dbMode) {
 					const { error } = await supabase
 						// .from("codes")
-						.from("codes_sv")
+						// .from("codes_sv")
+						.from("codes_latest")
 						.insert([{ code: code, qty: qty }]);
 
 					if (error) {
@@ -549,7 +551,8 @@ const generateAndCheckCodeF = async (qty) => {
 				if (dbMode) {
 					const { error } = await supabase
 						// .from("codes")
-						.from("codes_sv")
+						// .from("codes_sv")
+						.from("codes_latest")
 						.insert([{ code: code, qty: qty }]);
 
 					if (error) {
@@ -646,7 +649,8 @@ const generateAndCheckCodeG = async (qty) => {
 				if (dbMode) {
 					const { error } = await supabase
 						// .from("codes")
-						.from("codes_sv")
+						// .from("codes_sv")
+						.from("codes_latest")
 						.insert([{ code: code, qty: qty }]);
 
 					if (error) {
@@ -743,7 +747,8 @@ const generateAndCheckCodeH = async (qty) => {
 				if (dbMode) {
 					const { error } = await supabase
 						// .from("codes")
-						.from("codes_sv")
+						// .from("codes_sv")
+						.from("codes_latest")
 						.insert([{ code: code, qty: qty }]);
 
 					if (error) {
@@ -840,7 +845,8 @@ const generateAndCheckCodeC = async (qty) => {
 				if (dbMode) {
 					const { error } = await supabase
 						// .from("codes")
-						.from("codes_sv")
+						// .from("codes_sv")
+						.from("codes_latest")
 						.insert([{ code: code, qty: qty }]);
 
 					if (error) {
@@ -936,7 +942,8 @@ const generateAndCheckCodeE = async (qty) => {
 				if (dbMode) {
 					const { error } = await supabase
 						// .from("codes")
-						.from("codes_sv")
+						// .from("codes_sv")
+						.from("codes_latest")
 						.insert([{ code: code, qty: qty }]);
 
 					if (error) {
@@ -996,7 +1003,8 @@ const checkExistingCodes = async () => {
 					const codes = dbMode
 						? await supabase
 								// .from("codes")
-								.from("codes_sv")
+								// .from("codes_sv")
+								.from("codes_latest")
 								.select("code")
 								.eq("qty", qty)
 								.eq("is_used", false)
@@ -1064,7 +1072,8 @@ const checkExistingCodes = async () => {
 							if (!isValid && status === 801 && dbMode) {
 								const { error } = await supabase
 									// .from("codes")
-									.from("codes_sv")
+									// .from("codes_sv")
+									.from("codes_latest")
 									.update({ is_used: true, used_at: new Date().toISOString() })
 									.eq("code", codeValue);
 
@@ -1196,7 +1205,8 @@ const checkExpiredOrders = async () => {
 		// release codes
 		const { error: releaseError } = await supabase
 			// .from("codes")
-			.from("codes_sv")
+			// .from("codes_sv")
+			.from("codes_latest")
 			.update({
 				is_reserved: false,
 				reserved_until: null,
