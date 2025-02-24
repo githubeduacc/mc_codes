@@ -1349,8 +1349,8 @@ setInterval(() => {
 		await checkExistingCodes();
 		checkingCodes = false;
 	})();
-	// hour
-}, 3600000);
+	// half an hour
+}, 1800000);
 
 setInterval(() => {
 	if (checkingCodes) return;
@@ -1373,6 +1373,70 @@ setInterval(() => {
 		await checkExpiredOrders();
 	})();
 }, 60000);
+
+// const getGandHCodes = async () => {
+// 	const { data: codesSeventy, error: errorSeventy } = await supabase
+// 		.from("codes_sv")
+// 		.select("*")
+// 		.eq("qty", 70)
+// 		.eq("is_used", false);
+
+// 	const { data: codesFifty, error: errorFifty } = await supabase
+// 		.from("codes_sv")
+// 		.select("*")
+// 		.eq("qty", 50)
+// 		.eq("is_used", false);
+
+// 	if (errorSeventy) {
+// 		console.log(
+// 			`${logColors.red} Error fetching 70% off codes: ${errorSeventy.message} ${logColors.red}`
+// 		);
+// 		return;
+// 	}
+
+// 	if (errorFifty) {
+// 		console.log(
+// 			`${logColors.red} Error fetching 50% off codes: ${errorFifty.message} ${logColors.red}`
+// 		);
+// 		return;
+// 	}
+
+// 	const seventyGCodes = codesSeventy.filter((code) =>
+// 		code.code.startsWith("OFF70G")
+// 	);
+// 	const seventyHCodes = codesSeventy.filter((code) =>
+// 		code.code.startsWith("OFF70H")
+// 	);
+// 	const fiftyGCodes = codesFifty.filter((code) =>
+// 		code.code.startsWith("OFF50G")
+// 	);
+// 	const fiftyHCodes = codesFifty.filter((code) =>
+// 		code.code.startsWith("OFF50H")
+// 	);
+
+// 	const seventyCodes = [...seventyGCodes, ...seventyHCodes];
+// 	const fiftyCodes = [...fiftyGCodes, ...fiftyHCodes];
+// 	const allCodes = [...seventyCodes, ...fiftyCodes];
+// 	console.log(allCodes);
+
+// 	// insert into codes_latest
+// 	const { data: insertData, error: insertError } = await supabase
+// 		.from("codes_latest")
+// 		.insert(allCodes);
+
+// 	if (insertError) {
+// 		console.log(
+// 			`${logColors.red} Error inserting codes into codes_latest: ${insertError.message} ${logColors.red}`
+// 		);
+// 		return;
+// 	}
+
+// 	console.log(
+// 		`${logColors.green} Codes inserted into codes_latest ${logColors.green}`
+// 	);
+// };
+
+// getGandHCodes();
 
 app.listen(PORT, () => {
 	console.log(
