@@ -1054,7 +1054,7 @@ const checkExistingCodes = async () => {
 								validCodesForQty.push(codeValue);
 								validCodes.push(codeValue);
 							} else {
-								if (status === 801) {
+								if (status === 801 || status === 808) {
 									invalidCodesForQty.push(codeValue);
 									invalidCodes.push(codeValue);
 									console.log(
@@ -1069,7 +1069,7 @@ const checkExistingCodes = async () => {
 							totalCodesChecked++;
 
 							// update code in database
-							if (!isValid && status === 801 && dbMode) {
+							if (!isValid && (status === 801 || status === 808) && dbMode) {
 								const { error } = await supabase
 									// .from("codes")
 									// .from("codes_sv")
